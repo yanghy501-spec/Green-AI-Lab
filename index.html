@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="googlebot" content="noindex, nofollow">
+<title>AI 동료 실습장</title>
+<style>
+:root{--ink:#1b2430;--sub:#5b6676;--line:#dde3e9;--bg:#f4f6f5;--navy:#1f3a4d;--green:#2f7d5b;--green-soft:#e6f2ec;--warn:#9a5b13;--warn-soft:#fff4e2}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif;-webkit-text-size-adjust:100%}
+header{background:var(--navy);color:#fff;padding:16px 16px 12px}
+header .t{font-size:18px;font-weight:800;line-height:1.35}
+nav{position:sticky;top:0;z-index:5;display:flex;background:#fff;border-bottom:1px solid var(--line)}
+nav button{flex:1;min-height:56px;border:0;background:none;font:inherit;font-size:13px;color:var(--sub);padding:6px 2px;border-bottom:3px solid transparent}
+nav button b{display:block;font-size:18px}
+nav button.on{color:var(--green);border-bottom-color:var(--green);font-weight:700}
+main{padding:16px 16px 60px;max-width:640px;margin:0 auto}
+section{display:none}
+section.on{display:block}
+h2{font-size:20px;margin:6px 0 12px;color:var(--navy)}
+h3{font-size:16px;margin:22px 0 8px;color:var(--navy)}
+.hint{font-size:14px;color:var(--sub);margin:0 0 12px;line-height:1.5}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 12px}
+.card .ct{font-weight:700;color:var(--green);font-size:15px;margin-bottom:8px}
+.card .tx{font-size:15px;line-height:1.65;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+.card .tx b{color:var(--navy)}
+.copy{display:block;width:100%;min-height:46px;margin-top:10px;border:0;border-radius:10px;background:var(--green);color:#fff;font:inherit;font-size:15px;font-weight:700}
+.copy.done{background:var(--navy)}
+.links{display:flex;gap:10px;margin:4px 0 14px}
+.links a{flex:1;min-height:46px;display:flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--green);color:var(--green);text-decoration:none;font-weight:700}
+.chip{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.6;margin:0 0 14px}
+ol{padding-left:22px;margin:0 0 6px}
+ol li{font-size:15px;line-height:1.6;margin:0 0 8px}
+details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 12px}
+summary{font-weight:700;color:var(--navy);min-height:44px;display:flex;align-items:center;cursor:pointer}
+.pick{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.pick button{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px}
+.pick button.on{background:var(--green);color:#fff;border-color:var(--green)}
+.chk label{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 8px;font-size:15px;line-height:1.5;min-height:48px}
+.chk input{width:22px;height:22px;flex:none;margin-top:1px}
+textarea{width:100%;min-height:96px;border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:15px}
+.foot{font-size:12px;color:#8a95a1;margin-top:28px;line-height:1.5}
+</style>
+</head>
+<body>
+<header><div class="t" id="ttl"></div></header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<script>
+/* 단일 원본 (수강생·강사 공용, 비식별)
+   참가자가 복사하거나 읽는 문자열은 이 파일에만 둔다.
+   기준일 2026-10-12 · 도구 메뉴 이름은 바뀔 수 있음 */
+window.CORE = {
+  title: "모바일로 시작하는, AI 동료와 함께 일하기",
+  asOf: "2026-10-12",
+
+  modules: [
+    { id: "m1", tab: "①", name: "물어보기" },
+    { id: "m2", tab: "②", name: "지시문" },
+    { id: "m3", tab: "③", name: "만들기" },
+    { id: "m4", tab: "④", name: "시험 운전" },
+    { id: "m5", tab: "⑤", name: "남기기" }
+  ],
+
+  safety: [
+    "고객 이름, 연락처",
+    "차량번호",
+    "주민번호, 카드번호, 계좌번호",
+    "매출, 원가 같은 회사 내부 숫자"
+  ],
+
+  cards: {
+    open1: {
+      module: "m1",
+      title: "첫 질문",
+      text: "당진에서 사고차 수리를 맡길 만한 정비소를 추천해 주세요. 추천 이유도 함께 알려 주세요."
+    },
+    open2: {
+      module: "m1",
+      title: "이어서 물어보기",
+      text: "방금 추천한 곳의 주소와 전화번호를 알려 주세요. 그 정보를 어디서 확인했는지도 함께 알려 주세요."
+    },
+
+    pciBlank: {
+      module: "m2",
+      title: "지시문 빈 틀",
+      text:
+"[페르소나] 너는 ________ 담당이다. 맡은 일은 ________이다.\n" +
+"[맥락] 우리는 자동차 정비소다. 읽는 사람은 ________이다. 내가 ________을(를) 주면 그걸로 일한다.\n" +
+"[지시] 길이와 형식: ________. 하지 말 것: ________. 내가 주지 않은 내용은 지어내지 말고 \"확인 필요\"라고 표시한다."
+    },
+
+    meta: {
+      module: "m2",
+      title: "막힐 때: AI가 나에게 묻게 하기",
+      text:
+"맡길 일은 ________입니다. 이 일을 맡길 AI 동료의 지시문을 만들고 싶어요.\n" +
+"좋은 지시문을 쓰는 데 필요한 정보를 저에게 하나씩 질문해 주세요.\n" +
+"제가 다 답하면 페르소나, 맥락, 지시 세 부분으로 정리해 주세요."
+    },
+
+    w1: {
+      module: "m2",
+      title: "출고 안내 문자 담당",
+      text:
+"[페르소나] 너는 자동차 정비소 접수 데스크에서 출고 안내 문자를 쓰는 담당이다.\n" +
+"[맥락] 문자를 받는 사람은 정비를 맡기고 차를 찾으러 올 고객이다. 내가 정비 내용, 출고 가능 시간, 결제 금액, 다음 점검 시기를 메모로 주면 그걸로 문자를 쓴다.\n" +
+"[지시] 4~5줄, 존댓말, 이모티콘 없이 쓴다. 고객 이름 자리는 \"○○○ 고객님\"으로 비워 둔다. 내 메모에 없는 금액, 시간, 부품명은 지어내지 말고 \"확인 필요\"라고 표시한다."
+    },
+    w2: {
+      module: "m2",
+      title: "리뷰 답글 담당",
+      text:
+"[페르소나] 너는 자동차 정비소의 네이버 리뷰 답글 담당이다.\n" +
+"[맥락] 리뷰를 쓴 사람은 정비를 받고 간 고객이다. 칭찬 리뷰도 있고 불만 리뷰도 있다. 답글은 다른 손님도 읽는다.\n" +
+"[지시] 3~4문장으로 쓴다. 칭찬에는 리뷰에 적힌 내용을 짚어서 감사하고, 불만에는 먼저 사과한 뒤 연락 방법을 안내한다. 환불, 할인, 무상 수리는 내가 말하지 않으면 약속하지 않는다."
+    },
+    w3: {
+      module: "m2",
+      title: "거래 자료 정리 담당",
+      text:
+"[페르소나] 너는 사무실에서 거래 자료를 표로 정리하는 담당이다.\n" +
+"[맥락] 내가 거래명세서 내용이나 메모를 주면, 엑셀이나 이카운트에 옮기기 좋게 정리한다.\n" +
+"[지시] 표의 열은 날짜, 거래처, 품목, 수량, 단가, 금액 순서로 한다. 금액은 수량 곱하기 단가로 계산하고 마지막 줄에 합계를 넣는다. 빠진 칸은 추측하지 말고 \"확인 필요\"라고 쓴다."
+    },
+    w4: {
+      module: "m2",
+      title: "신입 안내 담당",
+      text:
+"[페르소나] 너는 정비소에 새로 들어온 직원에게 접수 업무를 알려 주는 선배다.\n" +
+"[맥락] 신입은 접수와 전화 응대를 처음 해 본다. 우리 정비소의 순서와 규칙은 내가 알려 준 것만 쓴다.\n" +
+"[지시] 신입이 물으면 짧게, 순서대로 답한다. 내가 알려 주지 않은 규칙은 만들지 말고 \"선배에게 확인하세요\"라고 답한다."
+    },
+
+    t1a: { module: "m4", forCard: "w1", title: "출고 문자 사례 1",
+      text: "엔진오일과 오일필터 교체, 앞 브레이크 패드 교체. 오늘 오후 5시 출고 가능. 결제 금액 38만 원. 다음 점검은 6개월 뒤." },
+    t1b: { module: "m4", forCard: "w1", title: "출고 문자 사례 2",
+      text: "에어컨 가스 충전, 실내 필터 교체. 내일 오전 출고." },
+
+    t2a: { module: "m4", forCard: "w2", title: "리뷰 사례 1",
+      text: "대기실이 깨끗하고 설명을 잘 해 주셔서 좋았어요. 수리도 생각보다 빨리 끝났습니다." },
+    t2b: { module: "m4", forCard: "w2", title: "리뷰 사례 2",
+      text: "견적보다 3만 원 더 나왔는데 미리 말을 안 해 줬어요. 다음엔 다른 데 가려고요." },
+
+    t3a: { module: "m4", forCard: "w3", title: "거래 자료 사례 1",
+      text: "10월 7일 가나부품 엔진오일 4L 6개 단가 32,000원\n10월 7일 가나부품 오일필터 10개 단가 8,500원\n10월 8일 다라상사 브레이크패드 2세트 단가 45,000원" },
+    t3b: { module: "m4", forCard: "w3", title: "거래 자료 사례 2",
+      text: "10월 9일 다라상사 와이퍼 단가 12,000원\n10월 9일 가나부품 냉각수 3통 단가 9,000원" },
+
+    t4a: { module: "m4", forCard: "w4", title: "신입 질문 사례 1",
+      text: "우리 정비소 전화 접수 순서야: 인사하고 정비소 이름 말하기, 차종과 증상 듣기, 방문 시간 정하기, 연락처 확인하기, 예약 내용 다시 읽어 주기.\n질문: 손님이 전화로 수리비가 얼마냐고 물으면 뭐라고 해요?" },
+    t4b: { module: "m4", forCard: "w4", title: "신입 질문 사례 2",
+      text: "예약 없이 바로 온 손님은 어떻게 받아요?" }
+  },
+
+  claudeSteps: [
+    "크롬에서 claude.ai 열고 로그인 (클로드 앱이 있으면 앱도 됩니다)",
+    "왼쪽 메뉴를 열고 '프로젝트' 누르기",
+    "새 프로젝트 만들기, 이름 쓰기 (예: 출고 문자 담당)",
+    "프로젝트 지침(Instructions) 칸에 ② 탭에서 복사한 지시문 붙여넣고 저장",
+    "그 프로젝트 안에서 새 대화를 열고 오늘 메모 넣기",
+    "프로젝트 메뉴가 안 보이면 크롬 ⋮ 메뉴에서 '데스크톱 사이트' 선택"
+  ],
+  memoSteps: [
+    "지시문을 휴대폰 메모에 저장 (제목: AI 동료 출고 문자)",
+    "일할 때마다 새 대화를 열고 지시문을 먼저 붙여넣기",
+    "그다음 줄에 오늘 메모 붙여넣기"
+  ],
+
+  checks: [
+    "내가 주지 않은 숫자, 날짜, 약속이 들어갔나",
+    "고객 이름, 연락처, 차량번호가 남아 있나",
+    "우리 정비소 말투와 규칙에 맞나",
+    "이 글이 내 이름으로 나가도 괜찮나"
+  ],
+
+  links: [
+    { name: "제미나이", url: "https://gemini.google.com/" },
+    { name: "클로드", url: "https://claude.ai/" }
+  ]
+};
+
+</script>
+<script>
+(function(){
+  var C=window.CORE, nav=document.getElementById('nav'), main=document.getElementById('main');
+  document.getElementById('ttl').textContent=C.title;
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function fmt(t){return esc(t).replace(/\[(페르소나|맥락|지시)\]/g,'<b>[$1]</b>')}
+  function card(id){var c=C.cards[id];return '<div class="card"><div class="ct">'+esc(c.title)+'</div><div class="tx">'+fmt(c.text)+'</div><button class="copy" data-id="'+id+'">복사하기</button></div>'}
+  function ol(a){return '<ol>'+a.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ol>'}
+  function links(){return '<div class="links">'+C.links.map(function(l){return '<a href="'+l.url+'" target="_blank" rel="noopener">'+esc(l.name)+' 열기</a>'}).join('')+'</div>'}
+  var work=['w1','w2','w3','w4'];
+
+  var S={};
+  S.m1='<h2>AI에게 물어보기</h2>'+
+    '<div class="chip">넣지 않는 것: '+C.safety.map(esc).join(' / ')+'</div>'+
+    links()+card('open1')+card('open2');
+  S.m2='<h2>AI 동료 업무 지시서</h2>'+
+    '<p class="hint">하나를 골라 복사한 뒤, 우리 정비소에 맞게 한두 줄 고쳐 쓰세요.</p>'+
+    work.map(card).join('')+
+    '<h3>직접 쓰기</h3>'+card('pciBlank')+
+    '<h3>막힐 때</h3>'+card('meta');
+  S.m3='<h2>AI 동료 만들기</h2>'+
+    '<h3>클로드 프로젝트로 만들기</h3>'+ol(C.claudeSteps)+
+    '<details><summary>안 될 때: 메모에 저장하기</summary>'+ol(C.memoSteps)+'</details>'+
+    links()+'<p class="hint">메뉴 이름은 앱 업데이트에 따라 조금 다를 수 있습니다. ('+C.asOf+' 기준)</p>';
+  S.m4='<h2>시험 운전</h2><p class="hint">내가 만든 동료의 일을 고르고, 사례를 하나씩 넣어 보세요.</p>'+
+    '<div class="pick" id="pick">'+work.map(function(w,i){return '<button data-w="'+w+'"'+(i?'':' class="on"')+'>'+esc(C.cards[w].title)+'</button>'}).join('')+'</div>'+
+    '<div id="tests"></div>'+
+    '<h3>보내기 전 출고 검사</h3><div class="chk">'+C.checks.map(function(c,i){return '<label><input type="checkbox"> '+esc(c)+'</label>'}).join('')+'</div>';
+  S.m5='<h2>남기기</h2>'+
+    '<h3>내일 처음 맡길 장면</h3><textarea placeholder="예: 내일 오후 출고 차량 2대 안내 문자"></textarea>'+
+    '<p class="hint">이 칸은 저장되지 않습니다. 필요하면 화면을 캡처해 두세요.</p>'+
+    '<h3>다시 볼 것</h3>'+
+    '<details open><summary>지시서 세 칸</summary><p class="hint">페르소나: 자리와 맡은 일 / 맥락: 누가 읽고 내가 무엇을 주는지 / 지시: 길이, 형식, 하지 말 것</p></details>'+
+    '<details><summary>막힐 때 쓰는 문장</summary>'+card('meta')+'</details>'+
+    '<details><summary>출고 검사</summary>'+ol(C.checks)+'</details>'+
+    '<p class="foot">다윈서비스 · 실습 사례는 모두 가상입니다.</p>';
+
+  C.modules.forEach(function(m,i){
+    var b=document.createElement('button'); b.dataset.m=m.id; b.innerHTML='<b>'+m.tab+'</b>'+esc(m.name); nav.appendChild(b);
+    var s=document.createElement('section'); s.id=m.id; s.innerHTML=S[m.id]; main.appendChild(s);
+  });
+  function renderTests(w){
+    var ids=Object.keys(C.cards).filter(function(k){return C.cards[k].forCard===w});
+    document.getElementById('tests').innerHTML=ids.map(card).join('');
+  }
+  function go(id){
+    nav.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.m===id)});
+    main.querySelectorAll('section').forEach(function(s){s.classList.toggle('on',s.id===id)});
+    scrollTo(0,0);
+  }
+  nav.addEventListener('click',function(e){var b=e.target.closest('button'); if(b){go(b.dataset.m); history.replaceState(null,'','?m='+b.dataset.m)}});
+  document.addEventListener('click',function(e){
+    var p=e.target.closest('#pick button');
+    if(p){document.querySelectorAll('#pick button').forEach(function(x){x.classList.toggle('on',x===p)}); renderTests(p.dataset.w); return}
+    var c=e.target.closest('.copy'); if(!c) return;
+    var t=C.cards[c.dataset.id].text;
+    function ok(){c.textContent='복사됨';c.classList.add('done');setTimeout(function(){c.textContent='복사하기';c.classList.remove('done')},1600)}
+    function fb(){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(_){}document.body.removeChild(ta);ok()}
+    if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(ok,fb)}else fb();
+  });
+  renderTests('w1');
+  var q=(location.search.match(/m=(m\d)/)||[])[1];
+  go(q&&document.getElementById(q)?q:'m1');
+})();
+</script>
+</body>
+</html>
